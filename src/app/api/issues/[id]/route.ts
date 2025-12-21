@@ -16,6 +16,11 @@ export async function PUT(req: NextRequest, { params }: Props) {
     return container.issueHandler.update(req, { params: resolvedParams });
 }
 
+export async function PATCH(req: NextRequest, { params }: Props) {
+    const resolvedParams = await params;
+    return container.issueHandler.update(req, { params: resolvedParams });
+}
+
 export async function DELETE(req: NextRequest, { params }: Props) {
     const resolvedParams = await params;
     return container.issueHandler.delete(req, { params: resolvedParams });
