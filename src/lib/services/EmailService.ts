@@ -1,58 +1,74 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import { welcomeTemplate, issueNotificationTemplate, profileUpdateTemplate } from '../templates/email-templates';
 
 export class EmailService {
-    private resend: Resend;
-    private readonly fromEmail = 'onboarding@resend.dev'; // Recommended for testing
+    private transporter: nodemailer.Transporter;
+    private readonly fromEmail: string;
 
     constructor() {
-        // Provide a fallback for build time/local dev if env var is missing
-        const apiKey = process.env.RESEND_API_KEY || 're_123456789_placeholder_for_build';
-        this.resend = new Resend(apiKey);
+        this.fromEmail = process.env.SMTP_USER || 'noreply@apnisec.com';
+
+        this.transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS,
+            },
+        });
     }
 
     async sendWelcomeEmail(to: string, name: string): Promise<void> {
-        if (process.env.RESEND_API_KEY) {
-            try {
-                await this.resend.emails.send({
-                    from: this.fromEmail,
-                    to,
-                    subject: 'Welcome to ApniSec',
-                    html: welcomeTemplate(name),
-                });
-            } catch (error) {
-                console.error('Failed to send welcome email:', error);
-            }
+        if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+            console.warn('SMTP credentials missing. Email skipped.');
+            return;
+        }
+
+        try {
+            await this.transporter.sendMail({
+                from: `"ApniSec" <${this.fromEmail}>`,
+                to,
+                subject: 'Welcome to ApniSec',
+                html: welcomeTemplate(name),
+            });
+            console.log(`Welcome email sent to ${to}`);
+        } catch (error) {
+            console.error('Failed to send welcome email:', error);
         }
     }
 
     async sendIssueNotification(to: string, issueTitle: string, userEmail: string, description: string = '', type: string = 'Issue'): Promise<void> {
-        if (process.env.RESEND_API_KEY) {
-            try {
-                await this.resend.emails.send({
-                    from: this.fromEmail,
-                    to,
-                    subject: `New Issue: ${issueTitle}`,
-                    html: issueNotificationTemplate(issueTitle, userEmail, description, type),
-                });
-            } catch (error) {
-                console.error('Failed to send issue notification:', error);
-            }
+        if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+            return;
+        }
+
+        try {
+            await this.transporter.sendMail({
+                from: `"ApniSec" <${this.fromEmail}>`,
+                to,
+                subject: `New Issue: ${issueTitle}`,
+                html: issueNotificationTemplate(issueTitle, userEmail, description, type),
+            });
+            console.log(`Issue notification sent for ${issueTitle}`);
+        } catch (error) {
+            console.error('Failed to send issue notification:', error);
         }
     }
 
     async sendProfileUpdateNotification(to: string, name: string): Promise<void> {
-        if (process.env.RESEND_API_KEY) {
-            try {
-                await this.resend.emails.send({
-                    from: this.fromEmail,
-                    to,
-                    subject: 'Profile Updated - ApniSec',
-                    html: profileUpdateTemplate(name),
-                });
-            } catch (error) {
-                console.error('Failed to send profile update notification:', error);
-            }
+        if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+            return;
+        }
+
+        try {
+            await this.transporter.sendMail({
+                from: `"ApniSec" <${this.fromEmail}>`,
+                to,
+                subject: 'Profile Updated - ApniSec',
+                html: profileUpdateTemplate(name),
+            });
+            console.log(`Profile update email sent to ${to}`);
+        } catch (error) {
+            console.error('Failed to send profile update notification:', error);
         }
     }
 }

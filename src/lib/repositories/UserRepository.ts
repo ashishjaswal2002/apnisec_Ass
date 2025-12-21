@@ -1,5 +1,5 @@
 import { PrismaClient, User } from '@prisma/client';
-import { RegisterDto } from '../dtos/auth.dto';
+import { RegisterSchema } from '../validation/auth.schema';
 
 export class UserRepository {
     private db: PrismaClient;
@@ -8,7 +8,7 @@ export class UserRepository {
         this.db = db;
     }
 
-    async create(data: RegisterDto & { passwordHash: string }): Promise<User> {
+    async create(data: RegisterSchema & { passwordHash: string }): Promise<User> {
         return this.db.user.create({
             data: {
                 email: data.email,
