@@ -1,6 +1,6 @@
 
 
-## 🛠️ Environment Variables (.env)
+## 🛠️ Environment Variables (.env**)
 
 Create a `.env` file in the root directory and add the following:
 
